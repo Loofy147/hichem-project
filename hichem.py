@@ -1,6 +1,6 @@
 """
 GitHub Advanced Project Assistant (HICHEM)
-Version: 5.0
+Version: 5.1
 Author: Hichem
 Features: Hybrid Analysis, Advanced Reporting, CI/CD Detection, Async Support
 """
@@ -16,6 +16,7 @@ from textstat import flesch_reading_ease, textstat
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.styles import ParagraphStyle
+import subprocess
 
 # Configuration
 CONFIG = {
@@ -136,24 +137,33 @@ class HybridRanker:
             print(f"Error calculating score: {e}")
             return 0
 
+class HICHEM_Core:
+    """Core Application System"""
+    def __init__(self):
+        self.ssh = SSHVault()
+        self.analyzer = ProjectAnalyzer()
+
+    async def search_projects(self, query, filters):
+        """Search GitHub projects (Dummy Implementation)"""
+        print(f"Searching for projects with query: {query} and filters: {filters}")
+        # يمكنك إضافة منطق البحث هنا
+
+    def run(self):
+        """Execute Core Logic"""
+        if not self.ssh.test_connection():
+            print("Error: Failed to connect to GitHub")
+            return
+
+        query = input("Enter search keywords: ")
+        filters = {
+            'min_stars': int(input("Minimum stars (0 for any): ") or 0),
+            'license': input("License type (optional): ")
+        }
+
+        # تشغيل البحث بشكل غير متزامن
+        asyncio.run(self.search_projects(query, filters))
+
 # Main Interface
-async def main():
-    hichem = HICHEM_Core()
-    if not hichem.ssh.test_connection():
-        print("Error: Failed to connect to GitHub")
-        return
-
-    query = input("Enter search keywords: ")
-    filters = {
-        'min_stars': int(input("Minimum stars (0 for any): ") or 0),
-        'license': input("License type (optional): ")
-    }
-
-    results = await hichem.search_projects(query, filters)
-    print("\nResults:")
-    for i, repo in enumerate(results, 1):
-        print(f"{i}. {repo['name']} ({repo['score']:.1f}/100)")
-        print(f"   Stars: {repo['stars']} | Health: {repo['health']['activity_score']:.1f}%")
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    hichem = HICHEM_Core()
+    hichem.run()
